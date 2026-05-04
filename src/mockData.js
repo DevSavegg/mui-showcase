@@ -264,6 +264,95 @@ export const COUNTRIES = [
   'Brazil', 'India', 'South Korea', 'Spain', 'Italy',
 ];
 
+// ─── Analytics view ────────────────────────────────────────
+export const ANALYTICS_DAYS = Array.from({ length: 30 }, (_, i) => i + 1);
+
+export const ANALYTICS_DAILY_USERS = [
+  830, 920, 870, 1010, 1080, 1150, 1220, 1180, 1240, 1310,
+  1280, 1350, 1410, 1380, 1450, 1500, 1480, 1560, 1620, 1580,
+  1650, 1700, 1680, 1740, 1820, 1790, 1860, 1920, 1880, 1950,
+];
+
+export const ANALYTICS_DAILY_SESSIONS = [
+  1450, 1520, 1490, 1610, 1700, 1750, 1820, 1780, 1860, 1920,
+  1900, 1980, 2040, 2010, 2080, 2150, 2120, 2200, 2280, 2240,
+  2310, 2380, 2360, 2420, 2510, 2480, 2560, 2640, 2600, 2700,
+];
+
+export const ANALYTICS_API_CALLS = [
+  { endpoint: '/v1/users', calls: 1842 },
+  { endpoint: '/v1/auth', calls: 1620 },
+  { endpoint: '/v1/projects', calls: 1340 },
+  { endpoint: '/v1/billing', calls: 980 },
+  { endpoint: '/v1/webhooks', calls: 720 },
+  { endpoint: '/v1/admin', calls: 410 },
+];
+
+export const ANALYTICS_TRAFFIC_BY_REGION = [
+  { id: 0, value: 38, label: 'North America' },
+  { id: 1, value: 28, label: 'Europe' },
+  { id: 2, value: 18, label: 'Asia Pacific' },
+  { id: 3, value: 10, label: 'South America' },
+  { id: 4, value: 6, label: 'Other' },
+];
+
+export const ANALYTICS_MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+export const ANALYTICS_REVENUE_2024 = [18, 21, 24, 26, 29, 31, 34, 36, 38, 41, 44, 48];
+export const ANALYTICS_REVENUE_2025 = [22, 24, 28, 32, 36, 41, 46, 49, 54, 58, 62, 68];
+
+export const ANALYTICS_SPARKLINES = {
+  signups:  [4, 7, 5, 9, 11, 8, 13, 12, 15, 14, 17, 19],
+  revenue:  [12, 14, 13, 16, 18, 17, 20, 22, 21, 24, 26, 28],
+  errors:   [3, 2, 4, 1, 2, 3, 1, 2, 1, 1, 0, 1],
+  latency:  [120, 118, 115, 122, 119, 117, 116, 114, 115, 113, 110, 108],
+};
+
+// ─── Billing view ──────────────────────────────────────────
+export const BILLING_INVOICES = [
+  { id: 'INV-2087', date: 'May 1, 2026',  amount: 49.0, status: 'Paid',     plan: 'Team' },
+  { id: 'INV-2056', date: 'Apr 1, 2026',  amount: 49.0, status: 'Paid',     plan: 'Team' },
+  { id: 'INV-2018', date: 'Mar 1, 2026',  amount: 19.0, status: 'Paid',     plan: 'Pro'  },
+  { id: 'INV-1991', date: 'Feb 1, 2026',  amount: 19.0, status: 'Paid',     plan: 'Pro'  },
+  { id: 'INV-1960', date: 'Jan 1, 2026',  amount: 19.0, status: 'Refunded', plan: 'Pro'  },
+  { id: 'INV-1930', date: 'Dec 1, 2025',  amount: 19.0, status: 'Paid',     plan: 'Pro'  },
+];
+
+export const BILLING_USAGE = [
+  { label: 'API calls',   used: 720_000, limit: 1_000_000, unit: 'reqs',  format: (v) => v.toLocaleString() },
+  { label: 'Storage',     used: 38,      limit: 50,        unit: 'GB',    format: (v) => `${v} GB` },
+  { label: 'Team seats',  used: 4,       limit: 5,         unit: 'seats', format: (v) => `${v} seats` },
+  { label: 'Webhooks',    used: 26,      limit: 100,       unit: 'hooks', format: (v) => `${v} hooks` },
+];
+
+export const BILLING_MONTHLY_SPEND = [19, 19, 19, 19, 19, 19, 19, 19, 49, 49, 49, 49];
+
+// ─── Settings view ─────────────────────────────────────────
+export const SETTINGS_NOTIFICATIONS = [
+  { id: 'deploys',    label: 'Deploy succeeded / failed', sub: 'Email + push',  defaultOn: true  },
+  { id: 'invoices',   label: 'New invoice issued',         sub: 'Email only',   defaultOn: true  },
+  { id: 'usage',      label: 'Usage threshold alerts',     sub: 'Email + Slack', defaultOn: true  },
+  { id: 'newsletter', label: 'Product newsletter',         sub: 'Monthly',      defaultOn: false },
+  { id: 'beta',       label: 'Beta program updates',       sub: 'Push only',    defaultOn: false },
+];
+
+export const SETTINGS_API_KEYS = [
+  { id: 'key_live_a8f2', label: 'Production',  prefix: 'sk_live_•••••••a8f2', created: 'Mar 12, 2026', lastUsed: '2 minutes ago' },
+  { id: 'key_test_b91c', label: 'Staging',     prefix: 'sk_test_•••••••b91c', created: 'Feb 04, 2026', lastUsed: '1 hour ago' },
+  { id: 'key_test_3def', label: 'Local dev',   prefix: 'sk_test_•••••••3def', created: 'Jan 22, 2026', lastUsed: 'Yesterday' },
+];
+
+// ─── Help view ─────────────────────────────────────────────
+export const HELP_TOPICS = [
+  { title: 'Getting started',         body: 'Set up your first workspace in under 5 minutes.', count: 12 },
+  { title: 'API reference',           body: 'Authentication, endpoints, and rate limits.',     count: 47 },
+  { title: 'Billing & plans',         body: 'Manage subscriptions, invoices, and usage caps.', count: 19 },
+  { title: 'Security & compliance',   body: 'SOC 2, GDPR, custom retention policies.',         count: 23 },
+];
+
 export const AVATAR_USERS = [
   { name: 'Ada Lovelace', color: '#ef4444' },
   { name: 'Alan Turing', color: '#f59e0b' },

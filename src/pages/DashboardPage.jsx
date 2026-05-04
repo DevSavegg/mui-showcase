@@ -11,71 +11,57 @@ import {
   Typography,
   Breadcrumbs,
   Link,
-  Container,
-  Paper,
-  Tabs,
-  Tab,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  TableContainer,
-  Chip,
-  Pagination,
   Stack,
   Button,
-  Slider,
-  Rating,
-  Stepper,
-  Step,
-  StepLabel,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Skeleton,
   Tooltip,
-  IconButton,
-  Card,
-  CardContent,
-  Grid,
   Alert,
   AlertTitle,
-  LinearProgress,
+  IconButton,
 } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import AddIcon from '@mui/icons-material/Add';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import GroupsIcon from '@mui/icons-material/Groups';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import CloudIcon from '@mui/icons-material/Cloud';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useState } from 'react';
-import { NAV_ITEMS, TABLE_ROWS, ONBOARDING_STEPS } from '../mockData';
+import { NAV_ITEMS } from '../mockData';
+import OverviewView from './dashboardViews/OverviewView';
+import UsersView from './dashboardViews/UsersView';
+import AnalyticsView from './dashboardViews/AnalyticsView';
+import BillingView from './dashboardViews/BillingView';
+import SettingsView from './dashboardViews/SettingsView';
+import HelpView from './dashboardViews/HelpView';
 
 const DRAWER_WIDTH = 240;
+const COLLAPSED_WIDTH = 72;
+const APPBAR_HEIGHT = 68; // matches Navbar Toolbar minHeight
 
-const statusColor = (status) =>
-  ({ Active: 'success', Invited: 'warning', Suspended: 'error' }[status] || 'default');
+const VIEWS = {
+  overview: OverviewView,
+  users: UsersView,
+  analytics: AnalyticsView,
+  billing: BillingView,
+  settings: SettingsView,
+  help: HelpView,
+};
 
-export default function DashboardPage({ drawerOpen, onDrawerClose, showLoginAlert, onDismissAlert }) {
+export default function DashboardPage({
+  drawerOpen,
+  onDrawerClose,
+  showLoginAlert,
+  onDismissAlert,
+}) {
   const [activeNav, setActiveNav] = useState('overview');
-  const [tab, setTab] = useState(0);
-  const [page, setPage] = useState(1);
-  const [sliderValue, setSliderValue] = useState(60);
-  const [rating, setRating] = useState(4);
-  const [activeStep, setActiveStep] = useState(1);
+  const [collapsed, setCollapsed] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [savingInDialog, setSavingInDialog] = useState(false);
   const [savedInDialog, setSavedInDialog] = useState(false);
 
-  const ROWS_PER_PAGE = 4;
-  const pagedRows = TABLE_ROWS.slice(
-    (page - 1) * ROWS_PER_PAGE,
-    page * ROWS_PER_PAGE
-  );
+  const drawerWidth = collapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH;
 
   const handleDialogSave = () => {
     setSavingInDialog(true);
@@ -92,43 +78,92 @@ export default function DashboardPage({ drawerOpen, onDrawerClose, showLoginAler
     setSavedInDialog(false);
   };
 
-  const drawerContent = (
-    <Box>
-      <Toolbar />
+  // Used by both the permanent (desktop) and temporary (mobile) drawers.
+  // `mini` controls whether labels are hidden — only the permanent drawer
+  // collapses; the mobile drawer always shows labels.
+  const renderDrawerContent = (mini) => (
+    <Box sx={{ overflowX: 'hidden' }}>
+      <Stack
+        direction="row"
+        justifyContent={mini ? 'center' : 'flex-end'}
+        sx={{ px: 1, py: 1, display: { xs: 'none', md: 'flex' } }}
+      >
+        <Tooltip title={mini ? 'Expand sidebar' : 'Collapse sidebar'} placement="right">
+          <IconButton size="small" onClick={() => setCollapsed((c) => !c)}>
+            {mini ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+          </IconButton>
+        </Tooltip>
+      </Stack>
       <Divider />
-      <List>
+      <List sx={{ pt: 1 }}>
         {NAV_ITEMS.map((item) => (
-          <ListItem key={item.id} disablePadding>
-            <ListItemButton
-              selected={activeNav === item.id}
-              onClick={() => setActiveNav(item.id)}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.label} />
-            </ListItemButton>
+          <ListItem key={item.id} disablePadding sx={{ display: 'block' }}>
+            <Tooltip title={mini ? item.label : ''} placement="right" disableInteractive>
+              <ListItemButton
+                selected={activeNav === item.id}
+                onClick={() => {
+                  setActiveNav(item.id);
+                  onDrawerClose?.();
+                }}
+                sx={{
+                  minHeight: 48,
+                  px: 2.5,
+                  justifyContent: mini ? 'center' : 'flex-start',
+                  borderRadius: 1,
+                  mx: 1,
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: mini ? 0 : 2,
+                    justifyContent: 'center',
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
+                {!mini && <ListItemText primary={item.label} />}
+              </ListItemButton>
+            </Tooltip>
           </ListItem>
         ))}
       </List>
     </Box>
   );
 
+  const ActiveView = VIEWS[activeNav] ?? OverviewView;
+  const activeLabel = NAV_ITEMS.find((n) => n.id === activeNav)?.label ?? activeNav;
+
   return (
     <Box sx={{ display: 'flex' }}>
+      {/* Desktop: permanent collapsible drawer that sits *below* the sticky AppBar */}
       <Drawer
         variant="permanent"
         sx={{
-          width: DRAWER_WIDTH,
+          width: drawerWidth,
           flexShrink: 0,
           display: { xs: 'none', md: 'block' },
+          transition: (t) =>
+            t.transitions.create('width', {
+              duration: t.transitions.duration.shortest,
+            }),
           '& .MuiDrawer-paper': {
-            width: DRAWER_WIDTH,
+            width: drawerWidth,
+            top: APPBAR_HEIGHT,
+            height: `calc(100% - ${APPBAR_HEIGHT}px)`,
             boxSizing: 'border-box',
+            overflowX: 'hidden',
+            transition: (t) =>
+              t.transitions.create('width', {
+                duration: t.transitions.duration.shortest,
+              }),
           },
         }}
       >
-        {drawerContent}
+        {renderDrawerContent(collapsed)}
       </Drawer>
 
+      {/* Mobile: temporary drawer triggered by the navbar hamburger */}
       <Drawer
         variant="temporary"
         open={drawerOpen}
@@ -136,13 +171,28 @@ export default function DashboardPage({ drawerOpen, onDrawerClose, showLoginAler
         ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box' },
+          '& .MuiDrawer-paper': {
+            width: DRAWER_WIDTH,
+            boxSizing: 'border-box',
+          },
         }}
       >
-        {drawerContent}
+        <Toolbar sx={{ minHeight: APPBAR_HEIGHT }} />
+        {renderDrawerContent(false)}
       </Drawer>
 
-      <Box component="main" sx={{ flexGrow: 1, p: 3, width: { md: `calc(100% - ${DRAWER_WIDTH}px)` } }}>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          width: { md: `calc(100% - ${drawerWidth}px)` },
+          transition: (t) =>
+            t.transitions.create('width', {
+              duration: t.transitions.duration.shortest,
+            }),
+        }}
+      >
         {showLoginAlert && (
           <Alert
             severity="success"
@@ -168,182 +218,10 @@ export default function DashboardPage({ drawerOpen, onDrawerClose, showLoginAler
           <Link underline="hover" color="inherit" href="#">
             Workspaces
           </Link>
-          <Typography color="text.primary" sx={{ textTransform: 'capitalize' }}>
-            {activeNav}
-          </Typography>
+          <Typography color="text.primary">{activeLabel}</Typography>
         </Breadcrumbs>
 
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          justifyContent="space-between"
-          alignItems={{ sm: 'center' }}
-          spacing={2}
-          sx={{ mb: 3 }}
-        >
-          <Box>
-            <Typography variant="h4" fontWeight={700} sx={{ textTransform: 'capitalize' }}>
-              {activeNav}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Manage your team, projects, and billing in one place.
-            </Typography>
-          </Box>
-          <Stack direction="row" spacing={1}>
-            <Tooltip title="Refresh data">
-              <IconButton><RefreshIcon /></IconButton>
-            </Tooltip>
-            <Tooltip title="Open save dialog">
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => setDialogOpen(true)}
-              >
-                New project
-              </Button>
-            </Tooltip>
-          </Stack>
-        </Stack>
-
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          {[
-            { label: 'MRR', value: '$24,500', delta: '+12.4%', icon: <AttachMoneyIcon />, color: 'success.main' },
-            { label: 'Active users', value: '1,284', delta: '+3.1%', icon: <GroupsIcon />, color: 'primary.main' },
-            { label: 'API calls / day', value: '4.2M', delta: '+18%', icon: <CloudIcon />, color: 'info.main' },
-            { label: 'Conversion', value: '3.6%', delta: '-0.4%', icon: <TrendingUpIcon />, color: 'warning.main' },
-          ].map((kpi) => (
-            <Grid item xs={12} sm={6} md={3} key={kpi.label}>
-              <Card>
-                <CardContent>
-                  <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">
-                        {kpi.label}
-                      </Typography>
-                      <Typography variant="h5" fontWeight={700}>
-                        {kpi.value}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{ color: kpi.delta.startsWith('-') ? 'error.main' : 'success.main' }}
-                      >
-                        {kpi.delta} vs last week
-                      </Typography>
-                    </Box>
-                    <Box sx={{ color: kpi.color }}>{kpi.icon}</Box>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-
-        <Paper sx={{ mb: 3 }}>
-          <Tabs
-            value={tab}
-            onChange={(_, v) => setTab(v)}
-            sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}
-          >
-            <Tab label="Members" />
-            <Tab label="Settings" />
-            <Tab label="Onboarding" />
-          </Tabs>
-
-          {tab === 0 && (
-            <Box>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Name</TableCell>
-                      <TableCell>Email</TableCell>
-                      <TableCell>Role</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell align="right">MRR</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {pagedRows.map((row) => (
-                      <TableRow key={row.id} hover>
-                        <TableCell>{row.name}</TableCell>
-                        <TableCell>{row.email}</TableCell>
-                        <TableCell>{row.role}</TableCell>
-                        <TableCell>
-                          <Chip label={row.status} size="small" color={statusColor(row.status)} />
-                        </TableCell>
-                        <TableCell align="right">
-                          ${(row.mrr / 100).toFixed(2)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <Stack direction="row" justifyContent="flex-end" sx={{ p: 2 }}>
-                <Pagination
-                  count={Math.ceil(TABLE_ROWS.length / ROWS_PER_PAGE)}
-                  page={page}
-                  onChange={(_, p) => setPage(p)}
-                  color="primary"
-                />
-              </Stack>
-            </Box>
-          )}
-
-          {tab === 1 && (
-            <Box sx={{ p: 4 }}>
-              <Stack spacing={4} maxWidth={500}>
-                <Box>
-                  <Typography gutterBottom>API rate limit ({sliderValue} req/sec)</Typography>
-                  <Slider
-                    value={sliderValue}
-                    onChange={(_, v) => setSliderValue(v)}
-                    valueLabelDisplay="auto"
-                    marks={[
-                      { value: 0, label: '0' },
-                      { value: 50, label: '50' },
-                      { value: 100, label: '100' },
-                    ]}
-                  />
-                </Box>
-                <Box>
-                  <Typography gutterBottom>How would you rate Stratus?</Typography>
-                  <Rating value={rating} onChange={(_, v) => setRating(v)} size="large" />
-                </Box>
-                <Box>
-                  <Typography gutterBottom>Storage usage (mocked)</Typography>
-                  <LinearProgress variant="determinate" value={sliderValue} />
-                </Box>
-              </Stack>
-            </Box>
-          )}
-
-          {tab === 2 && (
-            <Box sx={{ p: 4 }}>
-              <Stepper activeStep={activeStep} alternativeLabel>
-                {ONBOARDING_STEPS.map((label) => (
-                  <Step key={label}>
-                    <StepLabel>{label}</StepLabel>
-                  </Step>
-                ))}
-              </Stepper>
-              <Stack direction="row" justifyContent="center" spacing={1} sx={{ mt: 4 }}>
-                <Button
-                  disabled={activeStep === 0}
-                  onClick={() => setActiveStep((s) => s - 1)}
-                >
-                  Back
-                </Button>
-                <Button
-                  variant="contained"
-                  disabled={activeStep === ONBOARDING_STEPS.length - 1}
-                  onClick={() => setActiveStep((s) => s + 1)}
-                >
-                  Next
-                </Button>
-              </Stack>
-            </Box>
-          )}
-        </Paper>
+        <ActiveView onOpenDialog={() => setDialogOpen(true)} />
       </Box>
 
       <Dialog open={dialogOpen} onClose={handleDialogClose} maxWidth="sm" fullWidth>

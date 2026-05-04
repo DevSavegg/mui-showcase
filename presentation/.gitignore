@@ -1,0 +1,8 @@
+# Local-only generator files — the PPTX is the artifact we commit.
+generate.js
+package.json
+package-lock.json
+node_modules/
+
+# PowerPoint lock files
+~$*
